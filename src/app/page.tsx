@@ -130,6 +130,8 @@ export default function VoiceRecorder() {
     setDuration(0)
     setPlaybackState("READY")
     setIsRecording(false)
+    mediaRecorderRef.current = null
+    chunksRef.current = []
   }
 
   return (
