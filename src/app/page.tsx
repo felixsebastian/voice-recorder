@@ -66,6 +66,7 @@ export default function VoiceRecorder() {
   }
 
   const handleRecord = () => {
+    if(audioBlob) handleClear()
     setIsRecording(true)
     setPlaybackState("READY")
     setMicrophoneError(null)
