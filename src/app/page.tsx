@@ -20,6 +20,7 @@ export default function VoiceRecorder() {
   const [microphoneError, setMicrophoneError] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
   const isOnline = useOnlineState()
+  const [isPending, setIsPending] = useState(false)
 
   useEffect(() => {
     const updateDuration = async () => {
@@ -91,22 +92,29 @@ export default function VoiceRecorder() {
   }
 
   const handleConvertToText = async () => {
-    if(!audioBlob) throw Error()
+    if (!audioBlob) throw Error()
     const reader = new FileReader();
     reader.readAsDataURL(audioBlob);
+    setIsPending(true)
 
     reader.onloadend = async () => {
-      const base64Audio = reader.result?.toString().split(",")[1];
-      if (!base64Audio) return console.error("Failed to encode audio");
+      try {
+        const base64Audio = reader.result?.toString().split(",")[1];
+        if (!base64Audio) return console.error("Failed to encode audio");
 
-      const response = await fetch("/api/transcribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audioContent: base64Audio }),
-      });
+        const response = await fetch("/api/transcribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ audioContent: base64Audio }),
+        });
 
-      const data = await response.json();
-      setTranscript(data.transcript);
+        const data = await response.json();
+        setTranscript(data.transcript);
+      } catch {
+        alert("Failed to convert to texct")
+      } finally {
+        setIsPending(false)
+      }
     };
   }
 
@@ -159,8 +167,8 @@ export default function VoiceRecorder() {
           <Button onClick={handlePlay} disabled={!audioBlob || playbackState === "PLAYING"} variant="outline" className="flex-1">
             <Play className="h-4 w-4" /> Play
           </Button>
-          <Button onClick={handleConvertToText} disabled={!audioBlob || !isOnline} className="flex-1">
-            <FileAudio className="h-4 w-4" /> Convert to Text
+          <Button onClick={handleConvertToText} disabled={isPending || !audioBlob || !isOnline} className="flex-1">
+            <FileAudio className="h-4 w-4" /> {isPending ? `Converting...` : `Convert to Text`}
           </Button>
           <RecordingIndicator duration={duration} onClear={handleClear} />
         </div>}
