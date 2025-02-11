@@ -2,6 +2,8 @@
 
 A react app that allows you to record audio and convert speech to text.
 
+[View live demo here](https://voice-recorder-psi.vercel.app/)
+
 ## Getting Started
 
 First, run the development server:
@@ -17,6 +19,10 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the app.
+
+## WIP
+
+This is just a demo. See github issues for known bugs.
 
 ## Template
 
