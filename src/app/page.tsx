@@ -91,27 +91,23 @@ export default function VoiceRecorder() {
   }
 
   const handleConvertToText = async () => {
-    if (audioBlob) {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)()
-      recognition.lang = "en-US"
-      recognition.interimResults = false
-      recognition.maxAlternatives = 1
+    if(!audioBlob) throw Error()
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
 
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript
-        setTranscript(transcript)
-      }
+    reader.onloadend = async () => {
+      const base64Audio = reader.result?.toString().split(",")[1];
+      if (!base64Audio) return console.error("Failed to encode audio");
 
-      recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error)
-      }
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audioContent: base64Audio }),
+      });
 
-      const audioUrl = URL.createObjectURL(audioBlob)
-      const audio = new Audio(audioUrl)
-      audio.play()
-
-      recognition.start()
-    }
+      const data = await response.json();
+      setTranscript(data.transcript);
+    };
   }
 
   const handlePlay = () => {
